@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/IGITUGraz/SDict.svg?branch=master
+    :target: https://travis-ci.org/IGITUGraz/SDict
+    
 ===========
  The SDict
 ===========
