@@ -1,8 +1,6 @@
-from warnings import warn
-from collections import OrderedDict
-
 import logging
-logger = logging.getLogger('sdict')
+
+from collections import OrderedDict
 
 
 class sdictm(object):
@@ -29,7 +27,7 @@ class sdictm(object):
                 else:
                     self._data[key] = val
         else:
-            raise TypeError("should be initialized with a dictionary only")
+            raise RuntimeError("should be initialized with a dictionary only")
         assert isinstance(self._data, dict)
 
     def __getattr__(self, attr):
@@ -37,16 +35,34 @@ class sdictm(object):
             raise AttributeError()
         if attr in self._INSTANCE_VAR_LIST:
             return object.__getattribute__(self, attr)
-        ret = self._data.get(attr)
+        if '.' in attr:
+            # This is triggered exclusively in the case where __getattr__ is called from __getitem__
+            attrs = attr.split('.')
+            ret = self._data.get(attrs[0])
+            for at in attrs[1:]:
+                ret = ret[at]
+        else:
+            ret = self._data.get(attr)
         if ret is None:
-            warn("Returning None value for {}".format(attr), stacklevel=2)
+            new_val = self.__class__({})
+            self._data[attr] = new_val
+            ret = new_val
         return ret
 
     def __getitem__(self, key):
         return self.__getattr__(key)
 
     def __set__(self, key, value):
-        self._data[key] = value
+        if '.' in key:
+            attrs = key.split('.')
+            base = self.__getattr__(attrs[0])
+            for at in attrs[1:-1]:
+                base = base[at]
+            base[attrs[-1]] = value
+        else:
+            if key in self._data:
+                logging.warning("Key %s already in dictionary" % key)
+            self._data[key] = value
 
     def __setitem__(self, key, value):
         self.__set__(key, value)
@@ -99,9 +115,9 @@ class sdictm(object):
 
         for key, value in kwargs.items():
             if key in self._data:
-                logger.debug("Replacing {} with {} for key {}".format(self._data[key], value, key))
+                logging.debug("Replacing {} with {} for key {}".format(self._data[key], value, key))
             else:
-                logger.debug("Adding new key {} with value {}".format(key, value))
+                logging.debug("Adding new key {} with value {}".format(key, value))
             self._data[key] = value
 
         return self
@@ -136,16 +152,33 @@ class sdict(sdictm):
     """
 
     def __set__(self, attr, value):
-        raise TypeError("Cannot set value in Immutable dictionary")
+        raise NotImplementedError("Immutable dictionary")
 
     def __setattr__(self, attr, value):
         if attr in self._INSTANCE_VAR_LIST:
             object.__setattr__(self, attr, value)
         else:
-            raise TypeError("Cannot set value in Immutable dictionary")
+            raise NotImplementedError("Immutable dictionary")
+
+    def __getattr__(self, attr):
+        """
+        Same as sdictm, except that trying to access an unknown key returns None. (So this doesn't work recursively
+        for unknown keys)
+        :param attr:
+        :return:
+        """
+        if attr == '__getstate__':
+            raise AttributeError()
+        if attr in self._INSTANCE_VAR_LIST:
+            return object.__getattribute__(self, attr)
+        if '.' in attr:
+            attrs = attr.split('.')
+            ret = self._data.get(attrs[0])
+            for at in attrs[1:]:
+                ret = ret[at]
+        else:
+            ret = self._data.get(attr)
+        return ret
 
     def update(self, **kwargs):
-        raise TypeError("Cannot set value in Immutable dictionary")
-
-    def apply(self, fn):
-        raise TypeError("Cannot set value in Immutable dictionary")
+        raise NotImplementedError("Immutable dictionary")
