@@ -22,3 +22,21 @@ Dependencies
 ============
 
 None. Tested on Python 3.5.
+
+Usage
+=====
+
+.. code:: python
+
+    from sdict import sdict, sdictm
+    
+    d = dict(a=1, b=2, c=dict(d=3))
+    
+    # sdict is the immutable version
+    sd = sdict(d)
+    print(sd.a)  # -> prints 1
+    print(sd.c.d)  # -> prints 3
+    
+    # sdictm is the mutable version
+    sd = sdictm(d)
+    sd.a = 4  # -> a is now 4
