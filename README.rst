@@ -16,7 +16,7 @@ Installation
 The following command can be run from the directory containing this file in order to
 install it::
 
-    pip install .
+    pip install https://github.com/IGITUGraz/sdict/archive/master.zip
 
 Dependencies
 ============
