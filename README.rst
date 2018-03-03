@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/IGITUGraz/SDict.svg?branch=master
-    :target: https://travis-ci.org/IGITUGraz/SDict
+.. image:: https://travis-ci.org/IGITUGraz/sdict.svg?branch=master
+    :target: https://travis-ci.org/IGITUGraz/sdict
     
 ==========
  The sdict
